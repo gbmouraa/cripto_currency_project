@@ -25,6 +25,7 @@ table {
   border-collapse: separate;
   border-spacing: 0 14px;
   margin: 0;
+  margin-top: 24px;
   padding: 0;
   width: 100%;
   table-layout: fixed;
@@ -72,8 +73,31 @@ table td {
   color: #f91257;
 }
 
+.btn-more {
+  background-color: #30beff;
+  padding: 8px 24px;
+  color: #fff;
+  margin: 14px 0;
+  border-radius: 8px;
+}
+
+.home-currency-name {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.home-currency-logo {
+  width: 20px;
+  height: 20px;
+}
+
 /* responsividade tabela */
 @media screen and (max-width: 600px) {
+  .home-currency-name img {
+    margin-left: 14px;
+  }
+
   table {
     border: 0;
   }

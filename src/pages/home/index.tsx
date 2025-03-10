@@ -1,12 +1,96 @@
+import { useState, FormEvent, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "./home-style.css";
 import { BsSearch } from "react-icons/bs";
 import { Link } from "react-router-dom";
 
+interface CoinProps {
+  id: string;
+  rank: string;
+  changePercent24Hr: string;
+  explorer: string;
+  marketCapUsd: string;
+  maxSupply: string;
+  name: string;
+  priceUsd: string;
+  supply: string;
+  symbol: string;
+  volvwap24Hr: string;
+  volumeUsd24Hr: string;
+  // propriedades opcionais pois não vem direto
+  // da api, são adicionadas posteriormente
+  formatedPrice?: string;
+  formatedMarketCap?: string;
+  formatedVolume?: string;
+}
+
+interface DataProps {
+  data: CoinProps[];
+}
+
 export const Home = () => {
+  const [input, setInput] = useState("");
+  const [coins, setCoins] = useState<CoinProps[]>([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    getData();
+  }, []);
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    if (input === "") return;
+    navigate(`/detail/${input}`);
+  };
+
+  const getData = async () => {
+    try {
+      const req = await fetch(
+        "https://api.coincap.io/v2/assets?limit=10&offset=0"
+      );
+      const response: DataProps = await req.json();
+      const data = response.data;
+
+      const price = Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+      });
+
+      const compactPrice = Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        notation: "compact",
+      });
+
+      const formatedResult = data.map((item) => {
+        const formated = {
+          ...item,
+          formatedPrice: price.format(Number(item.priceUsd)),
+          formatedMarketCap: compactPrice.format(Number(item.marketCapUsd)),
+          formatedVolume: compactPrice.format(Number(item.volumeUsd24Hr)),
+        };
+        return formated;
+      });
+
+      setCoins(formatedResult);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleGetMore = () => {
+    alert("hello world");
+  };
+
   return (
     <main className="home-container">
-      <form className="home-form">
-        <input type="text" placeholder="Digite o nome da moeda" />
+      <form className="home-form" onSubmit={handleSubmit}>
+        <input
+          type="text"
+          placeholder="Digite o nome da moeda"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+        />
         <button type="submit">
           <BsSearch size={30} color="#fff" />
         </button>
@@ -32,29 +116,45 @@ export const Home = () => {
           </tr>
         </thead>
         <tbody id="home-tbody">
-          <tr className="home-tr">
-            <td className="home-td-label" data-label="Moeda">
-              <div>
-                <Link to={"/detail/bitcoin"}>
-                  <span>Bitcoin</span> | BTC
-                </Link>
-              </div>
-            </td>
-            <td className="home-td-label" data-label="Valor de Mercado">
-              1T
-            </td>
-            <td className="home-td-label" data-label="Preço">
-              8.000
-            </td>
-            <td className="home-td-label" data-label="Volume">
-              2B
-            </td>
-            <td className="home-td-label" data-label="Mudança 24h">
-              <span>1.20</span>
-            </td>
-          </tr>
+          {coins.length > 0 &&
+            coins.map((item) => (
+              <tr className="home-tr" key={item.id}>
+                <td className="home-td-label" data-label="Moeda">
+                  <div className="home-currency-name">
+                    <img
+                      src={`https://assets.coincap.io/assets/icons/${item.symbol.toLowerCase()}@2x.png`}
+                      alt="Logo"
+                      className="home-currency-logo"
+                    />
+                    <Link to={`/detail/${item.id}`}>
+                      <span>{item.symbol}</span>
+                    </Link>
+                  </div>
+                </td>
+                <td className="home-td-label" data-label="Valor de Mercado">
+                  {item.formatedMarketCap}
+                </td>
+                <td className="home-td-label" data-label="Preço">
+                  {item.formatedPrice}
+                </td>
+                <td className="home-td-label" data-label="Volume">
+                  {item.formatedVolume}
+                </td>
+                <td
+                  className={`home-td-label ${
+                    Number(item.changePercent24Hr) > 0 ? "td-profit" : "td-loss"
+                  }`}
+                  data-label="Mudança 24h"
+                >
+                  <span>{Number(item.changePercent24Hr).toFixed(2)}</span>
+                </td>
+              </tr>
+            ))}
         </tbody>
       </table>
+      <button className="btn-more" onClick={handleGetMore}>
+        Mostrar mais
+      </button>
     </main>
   );
 };
