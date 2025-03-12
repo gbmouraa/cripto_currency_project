@@ -4,7 +4,7 @@ import "./home-style.css";
 import { BsSearch } from "react-icons/bs";
 import { Link } from "react-router-dom";
 
-interface CoinProps {
+export interface CoinProps {
   id: string;
   rank: string;
   changePercent24Hr: string;
