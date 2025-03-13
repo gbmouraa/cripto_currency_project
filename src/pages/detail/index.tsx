@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { CoinProps } from "../home";
+import "./detail-style.css";
 
 interface ResponseData {
   data: CoinProps;
@@ -14,6 +15,7 @@ type DataProps = ResponseData | ErrorData;
 
 export const Detail = () => {
   const [coin, setCoin] = useState<CoinProps>();
+  const [loading, setLoading] = useState(true);
   const { cripto } = useParams();
   const navigate = useNavigate();
 
@@ -51,6 +53,7 @@ export const Detail = () => {
         };
 
         setCoin(dataResult);
+        setLoading(false);
       } catch (error) {
         console.log(error);
       }
@@ -59,9 +62,49 @@ export const Detail = () => {
     fechData();
   }, [cripto]);
 
+  if (loading || !coin) {
+    return (
+      <div>
+        <h4>Carregando detalhes...</h4>
+      </div>
+    );
+  }
+
   return (
-    <div>
-      <h1>Página Detalhe da Moeda</h1>
+    <div className="details-cointainer">
+      <h1 className="center">{coin?.name}</h1>
+      <h1 className="center">{coin?.symbol}</h1>
+      <section className="details-content">
+        <img
+          src={`https://assets.coincap.io/assets/icons/${coin?.symbol.toLowerCase()}@2x.png`}
+          alt="Logo"
+        />
+        <h1>
+          {coin?.name} | {coin?.symbol}
+        </h1>
+        <p>
+          <strong>Preço: </strong>
+          {coin?.formatedPrice}
+        </p>
+        <p>
+          <strong>Mercado: </strong>
+          {coin?.formatedMarketCap}
+        </p>
+        <p>
+          <strong>Volume: </strong>
+          {coin?.formatedVolume}
+        </p>
+        <p>
+          <strong>Mudança 24hr: </strong>
+          <span
+            className={`${
+              Number(coin?.changePercent24Hr) > 0 ? "profit" : "loss"
+            }`}
+          >
+            {Number(coin?.changePercent24Hr).toFixed(3)}
+          </span>
+        </p>
+      </section>
     </div>
   );
 };
